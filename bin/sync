@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+date_default_timezone_set('UTC');
+
+require_once dirname(__FILE__).'/../config/definitions.php';
+require_once dirname(__FILE__).'/../config/config.'.ENV.'.php';
+require_once dirname(__FILE__).'/../vendor/autoload.php';
+
+use Sync\Resolvers\Input;
+use Sync\Resolvers\Router;
+use Sync\Resolvers\Config;
+use Sync\Resolvers\Shutdown;
+use Sync\Development\Debugger;
+use Sync\Development\Message;
+
+register_shutdown_function([new Shutdown(), 'errorHandler']);
+$debugger = new Debugger();
+
+try {
+
+    (ENV === 'development') ? $debugger->startTime() : null;
+    $app = new Router(new Input(), new Config($config));
+    $app->run();
+    echo (ENV === 'development') ? Message::debug('elapsed', $debugger->getElapsedTime()) : null;
+}
+
+catch(\Exception $e) {
+    echo Message::error($e->getMessage());
+}
